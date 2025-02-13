@@ -27,10 +27,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Render loop in a separate thread
     let (render_tx, render_rx) = mpsc::channel();
-    let render_handle = thread::spawn(|| {
+    let render_handle = thread::spawn(move || {
         let mut last_frame = frame::new_frame();
         let mut stdout = io::stdout();
         render::render(&mut stdout, &last_frame, &last_frame, true);
+        loop {
+            let curr_frame = match render_rx.recv() {
+                Ok(x) => x,
+                Err(_) => break,
+            };
+            render::render(&mut stdout, &last_frame, &curr_frame, false);
+            last_frame = curr_frame;
+        }
     });
 
     // Game loop
