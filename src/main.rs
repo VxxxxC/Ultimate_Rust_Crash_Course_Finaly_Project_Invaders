@@ -4,8 +4,10 @@ use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::{event, ExecutableCommand};
 use rusty_audio::Audio;
 use std::error::Error;
-use std::io;
+use std::sync::mpsc;
 use std::time::Duration;
+use std::{io, thread};
+use Project_Invaders::{frame, render};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut audio = Audio::new();
@@ -22,6 +24,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     terminal::enable_raw_mode()?;
     stdout.execute(EnterAlternateScreen)?;
     stdout.execute(Hide)?;
+
+    // Render loop in a separate thread
+    let (render_tx, render_rx) = mpsc::channel();
+    let render_handle = thread::spawn(|| {
+        let mut last_frame = frame::new_frame();
+        let mut stdout = io::stdout();
+        render::render(&mut stdout, &last_frame, &last_frame, true);
+    });
 
     // Game loop
     'gameloop: loop {
