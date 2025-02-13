@@ -1,3 +1,5 @@
+use crate::{NUM_COLS, NUM_ROWS};
+
 pub type Frame = Vec<Vec<&'static str>>;
 
 pub fn new_frame() -> Frame {
@@ -11,3 +13,5 @@ pub fn new_frame() -> Frame {
     }
     cols
 }
+
+pub trait Drawable {}
