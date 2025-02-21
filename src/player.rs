@@ -9,7 +9,7 @@ impl Player {
     pub fn new() -> Self {
         Self {
             x : NUM_COLS / 2,
-            y: NUM_ROWS - 1,
+            y: NUM_ROWS - 2,
         }
     }
 
@@ -24,6 +24,11 @@ impl Player {
             self.x += 1;
         }
     }
+
+    // pub fn draw(&self, frame: &mut Frame){
+    //     frame[self.x][self.y] = "A";
+    // }
+    
 }
 
 impl Drawable for Player {

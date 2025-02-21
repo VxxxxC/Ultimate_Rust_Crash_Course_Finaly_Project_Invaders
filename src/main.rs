@@ -3,6 +3,8 @@ use crossterm::event::{Event, KeyCode};
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::{event, ExecutableCommand};
 use rusty_audio::Audio;
+use Project_Invaders::frame::Drawable;
+use Project_Invaders::player::Player;
 use std::error::Error;
 use std::sync::mpsc;
 use std::time::Duration;
@@ -21,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Terminal
     let mut stdout = io::stdout();
-    terminal::enable_raw_mode()?;
+    terminal::enable_raw_mode().expect("Failed to enable raw mode");
     stdout.execute(EnterAlternateScreen)?;
     stdout.execute(Hide)?;
 
@@ -43,13 +45,22 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Game loop
     'gameloop: loop {
+        let mut player = Player::new();
         // Pre-frame init
-        let curr_frame = frame::new_frame();
+        let mut curr_frame = frame::new_frame();
 
         // Input
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
+                    KeyCode::Left => {
+                        player.move_left();
+                        audio.play("pew");
+                    },
+                    KeyCode::Right => {
+                        player.move_right();
+                        audio.play("pew");
+                    },
                     KeyCode::Esc | KeyCode::Char('q') => {
                         audio.play("lose");
                         break 'gameloop;
@@ -60,6 +71,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         // Draw & render
+        player.draw(&mut curr_frame);
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
     }
