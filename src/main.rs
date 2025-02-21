@@ -43,6 +43,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Game loop
     'gameloop: loop {
+        // Pre-frame init
+        let curr_frame = frame::new_frame();
+
         // Input
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
@@ -55,9 +58,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
         }
+
+        // Draw & render
+        let _ = render_tx.send(curr_frame);
+        thread::sleep(Duration::from_millis(1));
     }
 
     // Cleanup
+    drop(render_tx);
+    render_handle.join().unwrap();
     audio.wait();
     stdout.execute(Show)?;
     stdout.execute(LeaveAlternateScreen)?;
